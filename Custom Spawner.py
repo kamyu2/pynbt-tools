@@ -2033,7 +2033,7 @@ class MakeSpawner:
                 if self.collarcolorCheck.get():
                         spawnerData.add(pynbt.TAG_Byte(name = "CollarColor", value = self.collarcolorVar.get()))
                 if self.cattypeCheck.get():
-                        spawnerData.add(pynbt.TAG_Byte(name = "CatType", value = self.cattypeVar.get()))
+                        spawnerData.add(pynbt.TAG_Int(name = "CatType", value = self.cattypeVar.get()))
                 if self.angerCheck.get():
                         spawnerData.add(pynbt.TAG_Short(name = "Anger", value = self.angerVar.get()))
                 if self.carriedCheck.get():
