@@ -88,7 +88,7 @@ class Offer:
                 return offer
                 
 class Villager:
-        def __init__(self, profession, riches, offers):
+        def __init__(self, profession, riches, invulnerable, offers):
                 self.CanPickUpLoot = 0
                 self.OnGround = 1
                 self.Air = 300
@@ -101,6 +101,7 @@ class Villager:
                 self.Dimension = 0
                 self.Profession = profession
                 self.Riches = riches
+                self.Invulnerable = invulnerable
                 self.FallDistance = 0
                 self.id = "Villager"
                 self.offers = offers
@@ -119,6 +120,8 @@ class Villager:
                 vill.add(pynbt.TAG_Int(name = "Dimension", value = self.Dimension))
                 vill.add(pynbt.TAG_Int(name = "Profession", value = self.Profession))
                 vill.add(pynbt.TAG_Int(name = "Riches", value = self.Riches))
+                if self.Invulnerable:
+                        vill.add(pynbt.TAG_Byte(name = "Invulnerable", value = 1))
                 vill.add(pynbt.TAG_Float(name = "FallDistance", value = self.FallDistance))
                 vill.add(pynbt.TAG_String(name = "id", value = self.id))
                 drops = pynbt.TAG_List(name = "DropChances")
@@ -198,6 +201,14 @@ class CustomVillager:
                 richesLabel.pack(side='left')
                 self.richesEntry.pack(side='left')
                 richesFrame.pack(pady=5)
+
+                invulnerableFrame = Tkinter.Frame(self.root)
+                invulnerableLabel = Tkinter.Label(invulnerableFrame, text="Invulnerable", width=12)
+                self.invulnerableCheck = Tkinter.BooleanVar(value=False)
+                self.invulnerableCheckButton = Tkinter.Checkbutton(invulnerableFrame, variable=self.invulnerableCheck, onvalue=True, offvalue=False, height=1)
+                self.invulnerableCheckButton.pack(side='left')
+                invulnerableLabel.pack(side='left')
+                invulnerableFrame.pack(pady=5)
 
                 offersFrame = Tkinter.Frame(self.root, bd=1, relief='sunken')
                 offersLabel = Tkinter.Label(offersFrame, text="Offer/s", width=8)
@@ -433,7 +444,7 @@ class CustomVillager:
                                 profession = 0
                         else:
                                 profession = index
-                        villager = Villager(profession, self.richesVar.get(), self.currentoffers)
+                        villager = Villager(profession, self.richesVar.get(), self.invulnerableCheck.get(), self.currentoffers)
                         schem = Schematic(villager.getNBT())
                         print(schem.schematic.pretty_string())
                         schem.schematic.save(filename="./schematics/" + self.filenameVar.get() + ".schematic")
