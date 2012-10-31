@@ -243,6 +243,8 @@ class MakeSpawner:
                 self.dimensionCheck = Tkinter.BooleanVar(value=False)
                 self.persistencereqVar = Tkinter.IntVar(value=1)
                 self.persistencereqCheck = Tkinter.BooleanVar(value=False)
+                self.invulnerableVar = Tkinter.IntVar(value=1)
+                self.invulnerableCheck = Tkinter.BooleanVar(value=False)
 
                 self.inloveVar = Tkinter.IntVar(value=1)
                 self.inloveCheck = Tkinter.BooleanVar(value=False)
@@ -302,6 +304,9 @@ class MakeSpawner:
                 self.richesVar = Tkinter.IntVar(value=0)
                 self.richesCheck = Tkinter.BooleanVar(value=False)
 
+                self.PlayerCreatedVar = Tkinter.IntVar(value=1)
+                self.PlayerCreatedCheck = Tkinter.BooleanVar(value=False)
+
                 self.thrownpotionvalueVar = Tkinter.IntVar(value=0)
                 self.thrownpotionvalueCheck = Tkinter.BooleanVar(value=False)
 
@@ -320,6 +325,12 @@ class MakeSpawner:
                 self.falldistanceCheck = Tkinter.BooleanVar(value=False)
                 self.dropitemVar = Tkinter.IntVar(value=0)
                 self.dropitemCheck = Tkinter.BooleanVar(value=False)
+                self.HurtEntitiesVar = Tkinter.IntVar(value=1)
+                self.HurtEntitiesCheck = Tkinter.BooleanVar(value=False)
+                self.FallHurtMaxVar = Tkinter.IntVar(value=20)
+                self.FallHurtMaxCheck = Tkinter.BooleanVar(value=False)
+                self.FallHurtAmountVar = Tkinter.DoubleVar(value=2)
+                self.FallHurtAmountCheck = Tkinter.BooleanVar(value=False)
 
                 self.valueVar = Tkinter.IntVar(value=0)
                 self.valueCheck = Tkinter.BooleanVar(value=False)
@@ -897,6 +908,15 @@ class MakeSpawner:
                 self.persistencereqEntry.pack(side='left')
                 self.persistencereqFrame.pack()
 
+                self.invulnerableFrame = Tkinter.Frame(self.baseFrame)
+                self.invulnerableCheckButton = Tkinter.Checkbutton(self.invulnerableFrame, variable=self.invulnerableCheck, onvalue=True, offvalue=False, height=1)
+                invulnerableLabel = Tkinter.Label(self.invulnerableFrame, text = "Invulnerable: ", width=15)
+                self.invulnerableEntry = Tkinter.Entry(self.invulnerableFrame, textvariable=self.invulnerableVar, width=10)
+                self.invulnerableCheckButton.pack(side='left')
+                invulnerableLabel.pack(side='left')
+                self.invulnerableEntry.pack(side='left')
+                self.invulnerableFrame.pack()
+
 #### position and motion tags
                 self.positionmotionFrame = Tkinter.Frame(self.tabbedWindows)
                 self.positionFrame = Tkinter.Frame(self.positionmotionFrame)
@@ -977,10 +997,26 @@ class MakeSpawner:
                 self.directionZEntry.pack(side='left')
                 self.directionZFrame.pack()
 
-#### breedable tags
+#### mob specific frame stuff
+                
                 self.mobspecificFrame = Tkinter.Frame(self.tabbedWindows)
                 self.breedableFrame = Tkinter.Frame(self.mobspecificFrame)
                 self.hostileotherFrame = Tkinter.Frame(self.mobspecificFrame)
+
+#### golem tags
+                self.golemFrame = Tkinter.Frame(self.breedableFrame)
+                (Tkinter.Label(self.golemFrame, text = "Golem data")).pack(pady=3)
+
+                self.PlayerCreatedFrame = Tkinter.Frame(self.golemFrame)
+                self.PlayerCreatedCheckButton = Tkinter.Checkbutton(self.PlayerCreatedFrame, variable=self.PlayerCreatedCheck, onvalue=True, offvalue=False, height=1)
+                PlayerCreatedLabel = Tkinter.Label(self.PlayerCreatedFrame, text = "Player Created: ", width=15)
+                self.PlayerCreatedEntry = Tkinter.Entry(self.PlayerCreatedFrame, textvariable=self.PlayerCreatedVar, width=10)
+                self.PlayerCreatedCheckButton.pack(side='left')
+                PlayerCreatedLabel.pack(side='left')
+                self.PlayerCreatedEntry.pack(side='left')
+                self.PlayerCreatedFrame.pack()
+
+#### breedable tags
                 
                 self.breedFrame = Tkinter.Frame(self.breedableFrame)
                 (Tkinter.Label(self.breedFrame, text = "Breedable mob data")).pack(pady=3)
@@ -1350,6 +1386,33 @@ class MakeSpawner:
                 dropitemLabel.pack(side='left')
                 self.dropitemEntry.pack(side='left')
                 self.dropitemFrame.pack()
+
+                self.HurtEntitiesFrame = Tkinter.Frame(self.fallingsandFrame)
+                self.HurtEntitiesCheckButton = Tkinter.Checkbutton(self.HurtEntitiesFrame, variable=self.HurtEntitiesCheck, onvalue=True, offvalue=False, height=1)
+                HurtEntitiesLabel = Tkinter.Label(self.HurtEntitiesFrame, text = "Hurt Entities: ", width=15)
+                self.HurtEntitiesEntry = Tkinter.Entry(self.HurtEntitiesFrame, textvariable=self.HurtEntitiesVar, width=10)
+                self.HurtEntitiesCheckButton.pack(side='left')
+                HurtEntitiesLabel.pack(side='left')
+                self.HurtEntitiesEntry.pack(side='left')
+                self.HurtEntitiesFrame.pack()
+
+                self.FallHurtMaxFrame = Tkinter.Frame(self.fallingsandFrame)
+                self.FallHurtMaxCheckButton = Tkinter.Checkbutton(self.FallHurtMaxFrame, variable=self.FallHurtMaxCheck, onvalue=True, offvalue=False, height=1)
+                FallHurtMaxLabel = Tkinter.Label(self.FallHurtMaxFrame, text = "Fall Hurt Max: ", width=15)
+                self.FallHurtMaxEntry = Tkinter.Entry(self.FallHurtMaxFrame, textvariable=self.FallHurtMaxVar, width=10)
+                self.FallHurtMaxCheckButton.pack(side='left')
+                FallHurtMaxLabel.pack(side='left')
+                self.FallHurtMaxEntry.pack(side='left')
+                self.FallHurtMaxFrame.pack()
+
+                self.FallHurtAmountFrame = Tkinter.Frame(self.fallingsandFrame)
+                self.FallHurtAmountCheckButton = Tkinter.Checkbutton(self.FallHurtAmountFrame, variable=self.FallHurtAmountCheck, onvalue=True, offvalue=False, height=1)
+                FallHurtAmountLabel = Tkinter.Label(self.FallHurtAmountFrame, text = "Fall Hurt Amt: ", width=15)
+                self.FallHurtAmountEntry = Tkinter.Entry(self.FallHurtAmountFrame, textvariable=self.FallHurtAmountVar, width=10)
+                self.FallHurtAmountCheckButton.pack(side='left')
+                FallHurtAmountLabel.pack(side='left')
+                self.FallHurtAmountEntry.pack(side='left')
+                self.FallHurtAmountFrame.pack()
 
 #### xp orb tags
                 self.xporbFrame = Tkinter.Frame(self.itemsblocksFrame)
@@ -1898,7 +1961,8 @@ class MakeSpawner:
                 self.witherbossFrame.pack()
                 self.batFrame.pack()
                 self.villagerFrame.pack()
-                
+
+                self.golemFrame.pack()
                 self.breedFrame.pack()
                 self.pigFrame.pack()
                 self.sheepFrame.pack()
@@ -2000,10 +2064,14 @@ class MakeSpawner:
                         spawnerData.add(pynbt.TAG_Int(name = "Dimension", value = self.dimensionVar.get()))
                 if self.persistencereqCheck.get():
                         spawnerData.add(pynbt.TAG_Byte(name = "PersistenceRequired", value = self.persistencereqVar.get()))
+                if self.invulnerableCheck.get():
+                        spawnerData.add(pynbt.TAG_Byte(name = "Invulnerable", value = self.invulnerableVar.get()))
                 if self.inloveCheck.get():
                         spawnerData.add(pynbt.TAG_Int(name = "InLove", value = self.inloveVar.get()))
                 if self.mobageCheck.get():
                         spawnerData.add(pynbt.TAG_Int(name = "Age", value = self.mobageVar.get()))
+                if self.PlayerCreatedCheck.get():
+                        spawnerData.add(pynbt.TAG_Byte(name = "PlayerCreated", value = self.PlayerCreatedVar.get()))
                 if self.saddleCheck.get():
                         spawnerData.add(pynbt.TAG_Byte(name = "Saddle", value = self.saddleVar.get()))
                 if self.shearedCheck.get():
@@ -2060,6 +2128,12 @@ class MakeSpawner:
                         spawnerData.add(pynbt.TAG_Float(name = "FallDistance", value = self.falldistanceVar.get()))
                 if self.dropitemCheck.get():
                         spawnerData.add(pynbt.TAG_Byte(name = "DropItem", value = self.dropitemVar.get()))
+                if self.HurtEntitiesCheck.get():
+                        spawnerData.add(pynbt.TAG_Byte(name = "HurtEntities", value = self.HurtEntitiesVar.get()))
+                if self.FallHurtMaxCheck.get():
+                        spawnerData.add(pynbt.TAG_Int(name = "FallHurtMax", value = self.FallHurtMaxVar.get()))
+                if self.FallHurtAmountCheck.get():
+                        spawnerData.add(pynbt.TAG_Float(name = "FallHurtAmount", value = self.FallHurtAmountVar.get()))
                 if self.valueCheck.get():
                         spawnerData.add(pynbt.TAG_Short(name = "Value", value = self.valueVar.get()))
                 if self.xtileCheck.get():
@@ -2596,7 +2670,7 @@ class MakeSpawner:
 if __name__ == '__main__':
         root = Tkinter.Tk()
         root.title('Custom Spawner')
-        root.wm_geometry('750x700')
+        root.wm_geometry('750x750')
         ## Grid sizing behavior in window
         root.grid_rowconfigure(0, weight=1)
         root.grid_columnconfigure(0, weight=1)
