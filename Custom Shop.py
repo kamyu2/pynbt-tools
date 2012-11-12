@@ -177,8 +177,7 @@ class Schematic:
 class CustomVillager:
         def __init__(self, frame):
                 self.root = frame
-                self.root.title('Custom Shop')
-
+                
                 self.currentoffers = []
                 self.currentlore = []
 
@@ -453,7 +452,30 @@ class CustomVillager:
                         
 if __name__ == '__main__':
         root = Tkinter.Tk()
-        mywindow = CustomVillager(root)
+        root.title('Custom Shop')
+        root.wm_geometry('680x710')
+        ## Grid sizing behavior in window
+        root.grid_rowconfigure(0, weight=1)
+        root.grid_columnconfigure(0, weight=1)
+        ## Canvas
+        cnv = Tkinter.Canvas(root)
+        cnv.grid(row=0, column=0, sticky='nswe')
+        ## Scrollbars for canvas
+        hScroll = Tkinter.Scrollbar(root, orient='horizontal', command=cnv.xview)
+        hScroll.grid(row=1, column=0, sticky='we')
+        vScroll = Tkinter.Scrollbar(root, orient='vertical', command=cnv.yview)
+        vScroll.grid(row=0, column=1, sticky='ns')
+        cnv.configure(xscrollcommand=hScroll.set, yscrollcommand=vScroll.set)
+        ## Frame in canvas
+        frm = Tkinter.Frame(cnv)
+        ## This puts the frame in the canvas's scrollable zone
+        cnv.create_window(0, 0, window=frm, anchor='nw')
+        ## Frame contents
+        mywindow = CustomVillager(frm)
+        ## Update display to get correct dimensions
+        frm.update_idletasks()
+        ## Configure size of canvas's scrollable zone
+        cnv.configure(scrollregion=(0, 0, frm.winfo_width(), frm.winfo_height()))
 	root.mainloop()
 
 
