@@ -71,36 +71,35 @@ class Potion:
                 
 class MakeSpawner:
         def __init__(self,frame):
+                self.weightedmoblist = []
                 mobFile = open("MobList.txt", 'r')
                 self.mobList = []
                 for line in mobFile:
                         if line.count('#') == 0:
                                 mob = line.strip()
                                 self.mobList.append(mob)
-##                spawndataFile = open("SpawnDataList.txt", 'r')
-##                self.spawndataList = []
-##                for line in spawndataFile:
-##                        if line.count('#') == 0:
-##                                spawndata = line.strip()
-##                                self.spawndataList.append(spawndata)
                 self.root = frame
-                #self.root.title('Custom Spawner')
+                self.allmobdataandlistFrame = Tkinter.Frame(self.root)
+                self.currentmoballdataFrame = Tkinter.Frame(self.allmobdataandlistFrame)
 
                 self.loadschematicButton = ttk.Button(self.root, command=self.loadschematic, text="Load Schematic")
                 self.loadschematicButton.pack(pady=5)
 
-                #self.mobBox = Tix.ComboBox(self.root, label="Mob to spawn: ", dropdown=1, editable=0, command=self.mob_selected)
                 self.mobBoxSelection = Tkinter.StringVar()
-                self.mobBox = ttk.Combobox(self.root, textvariable=self.mobBoxSelection, state='readonly')
+                self.mobBox = ttk.Combobox(self.currentmoballdataFrame, textvariable=self.mobBoxSelection, state='readonly')
                 self.mobBox['values'] = self.mobList
                 self.mobBox.current(0)
-                #x = 0
-                #for mob in self.mobList:
-                #        self.mobBox.insert(x, mob)
-                #        x += 1
                 self.mobBox.pack(pady=5)
 
-                self.tabbedWindows = ttk.Notebook(self.root)
+                self.mobweightVar = Tkinter.IntVar(value=1)
+                self.mobweightFrame = Tkinter.Frame(self.currentmoballdataFrame)
+                mobweightLabel = Tkinter.Label(self.mobweightFrame, text="Weight", width=10)
+                self.mobweightEntry = Tkinter.Entry(self.mobweightFrame, textvariable=self.mobweightVar, width=10)
+                mobweightLabel.pack(side='left')
+                self.mobweightEntry.pack(side='left')
+                self.mobweightFrame.pack(pady=5)
+
+                self.tabbedWindows = ttk.Notebook(self.currentmoballdataFrame)
                 self.windowCount = 0
 
                 self.filenameVar = Tkinter.StringVar(value="temp")
@@ -112,8 +111,22 @@ class MakeSpawner:
                 self.filenameEntry.pack(side='left')
                 filenameLabel2.pack(side='left')
 
+                weightedmobbuttonandlistFrame = Tkinter.Frame(self.allmobdataandlistFrame)
+                weightedmobbuttonFrame = Tkinter.Frame(weightedmobbuttonandlistFrame)
+                self.addweightedmobButton = Tkinter.Button(weightedmobbuttonFrame, command=self.addmobtolist, text="Add Entity", width=15, height=2)
+                self.removeweightedmobButton = Tkinter.Button(weightedmobbuttonFrame, command=self.removemobfromlist, text="Remove Entity", width=15, height=2)
+                self.removeallweightedmobsButton = Tkinter.Button(weightedmobbuttonFrame, command=self.removeallmobs, text="Remove all", width=15, height=2)
+                self.addweightedmobButton.pack(pady=5)
+                self.removeweightedmobButton.pack(pady=5)
+                self.removeallweightedmobsButton.pack(pady=5)
+                weightedmobbuttonFrame.pack(side='left')
+                self.weightedmobsdisplayList = Tkinter.Listbox(weightedmobbuttonandlistFrame, selectmode='SINGLE', width=40)
+                self.weightedmobsdisplayList.bind('<<ListboxSelect>>', self.selectmobfromlist)
+                self.weightedmobsdisplayList.pack(padx=5, side='left', fill='y', expand=1)
+                
 ## custom potion effect stuff
                 self.currenteffects = []
+                self.weightedmoblist = []
 
                 self.custompotioneffectFrame = Tkinter.Frame(self.tabbedWindows)
                 custompotioneffectLabel = Tkinter.Label(self.custompotioneffectFrame, text="Multi-effect potion data",width=20)
@@ -248,7 +261,9 @@ class MakeSpawner:
                 self.persistencereqCheck = Tkinter.BooleanVar(value=False)
                 self.invulnerableVar = Tkinter.IntVar(value=1)
                 self.invulnerableCheck = Tkinter.BooleanVar(value=False)
-
+                self.portalcooldownVar = Tkinter.IntVar(value=900)
+                self.portalcooldownCheck = Tkinter.BooleanVar(value=False)
+                
                 self.inloveVar = Tkinter.IntVar(value=1)
                 self.inloveCheck = Tkinter.BooleanVar(value=False)
                 self.mobageVar = Tkinter.IntVar(value=0)
@@ -1022,6 +1037,15 @@ class MakeSpawner:
                 invulnerableLabel.pack(side='left')
                 self.invulnerableEntry.pack(side='left')
                 self.invulnerableFrame.pack()
+
+                self.portalcooldownFrame = Tkinter.Frame(self.baseFrame)
+                self.portalcooldownCheckButton = Tkinter.Checkbutton(self.portalcooldownFrame, variable=self.portalcooldownCheck, onvalue=True, offvalue=False, height=1)
+                portalcooldownLabel = Tkinter.Label(self.portalcooldownFrame, text = "PortalCooldown: ", width=15)
+                self.portalcooldownEntry = Tkinter.Entry(self.portalcooldownFrame, textvariable=self.portalcooldownVar, width=10)
+                self.portalcooldownCheckButton.pack(side='left')
+                portalcooldownLabel.pack(side='left')
+                self.portalcooldownEntry.pack(side='left')
+                self.portalcooldownFrame.pack()
 
 #### position and motion tags
                 self.positionmotionFrame = Tkinter.Frame(self.tabbedWindows)
@@ -2122,15 +2146,20 @@ class MakeSpawner:
                 
                 self.tabbedWindows.pack(padx=10)
 
+                self.currentmoballdataFrame.pack(side='left')
+                weightedmobbuttonandlistFrame.pack(side='left')
+                self.allmobdataandlistFrame.pack()
+
                 self.filenameFrame.pack(pady=7)
                 self.createSpawnerButton = ttk.Button(self.root, command=self.createSpawner, text="Create Spawner")
                 self.createSpawnerButton.pack(pady=2)
                 
         def createSpawner(self):
-                isItem = False
-                itemData = pynbt.TAG_Compound()
-                itemData.name = "Item"
-                spawner = Spawner(self.mobBoxSelection.get())
+                print("Creating schematic")
+                if len(self.weightedmoblist) == 0:
+                        self.addmobtolist()
+                spawner = Spawner(self.weightedmoblist[0]["Type"].value)
+                prop = self.weightedmoblist[0]["Properties"]
                 if self.delayCheck.get():
                         spawner.spawner['Delay'].value = self.delayVar.get()
                 if self.minspawndelayCheck.get():
@@ -2145,8 +2174,28 @@ class MakeSpawner:
                         spawner.spawner.add(pynbt.TAG_Short(name = "RequiredPlayerRange", value = self.RequiredPlayerRangeVar.get()))
                 if self.SpawnRangeCheck.get():
                         spawner.spawner.add(pynbt.TAG_Short(name = "SpawnRange", value = self.SpawnRangeVar.get()))
+                spawnpotentials = pynbt.TAG_List(name="SpawnPotentials")
+                spawnpotentialscount = 0
+                for mob in self.weightedmoblist:
+                        spawnpotentials.insert(spawnpotentialscount, mob)
+                        spawnpotentialscount += 1
+                spawner.spawner.add(spawnpotentials)
+                spawner.spawner.add(prop)
+                schem = Schematic(spawner.spawner)
+
+                print(schem.schematic.pretty_string())
+                schem.schematic.save(filename="./schematics/" + self.filenameVar.get() + ".schematic")
+                
+        def addmobtolist(self):
+                print("Adding entity to list")
+                currentmobdata = pynbt.TAG_Compound()
+                currentmobdata.add(pynbt.TAG_Int(name = "Weight", value = self.mobweightVar.get()))
+                currentmobdata.add(pynbt.TAG_String(name = "Type", value = self.mobBoxSelection.get()))
+                isItem = False
+                itemData = pynbt.TAG_Compound()
+                itemData.name = "Item"
                 spawnerData = pynbt.TAG_Compound()
-                spawnerData.name = "SpawnData"
+                spawnerData.name = "Properties"
                 positionList = pynbt.TAG_List(name="Pos")
                 motionList = pynbt.TAG_List(name="Motion")
                 directionList = pynbt.TAG_List(name="direction")
@@ -2185,6 +2234,8 @@ class MakeSpawner:
                         spawnerData.add(pynbt.TAG_Byte(name = "PersistenceRequired", value = self.persistencereqVar.get()))
                 if self.invulnerableCheck.get():
                         spawnerData.add(pynbt.TAG_Byte(name = "Invulnerable", value = self.invulnerableVar.get()))
+                if self.portalcooldownCheck.get():
+                        spawnerData.add(pynbt.TAG_Int(name = "PortalCooldown", value = self.portalcooldownVar.get()))
                 if self.inloveCheck.get():
                         spawnerData.add(pynbt.TAG_Int(name = "InLove", value = self.inloveVar.get()))
                 if self.mobageCheck.get():
@@ -2293,8 +2344,6 @@ class MakeSpawner:
                 itemdisplaydata.name = "display"
                 additemdisplaydata = False
                 if self.enchantsCheck.get():
-                        #itemEnchants = pynbt.TAG_Compound()
-                        #itemEnchants.name = "tag"
                         itemenchantList = pynbt.TAG_List(name="ench")
                         itemenchantCount = 0
                         itemenchantData = self.enchantsVar.get().split()
@@ -2306,7 +2355,6 @@ class MakeSpawner:
                                 itemenchantCount +=2
                         itemtagdata.add(itemenchantList)
                         additemtagdata = True
-                        #itemData.add(itemEnchants)
                 if self.itemskullownerCheck.get():
                         itemtagdata.add(pynbt.TAG_String(name = "SkullOwner", value = self.itemskullownerVar.get()))
                         try:
@@ -2752,7 +2800,6 @@ class MakeSpawner:
 
                 if self.custompotioneffectCheck.get():
                         cpeindex = int(self.colorBox.current())
-                        #print("index: %s" % (cpeindex))
                         cpedamage = 0
                         if cpeindex < 0:
                                 print("Color error... defaulting to 0")
@@ -2765,7 +2812,10 @@ class MakeSpawner:
                                         cpedamage = self.presetsplashdamagelist[cpeindex]
                                 else:
                                         cpedamage = self.presetdamagelist[cpeindex]
-                        cpepotion = Potion(cpedamage, self.currenteffects)
+                        ce = []
+                        for e in self.currenteffects:
+                                ce.append(e)
+                        cpepotion = Potion(cpedamage, ce)
                         if self.mobBoxSelection.get() == "ThrownPotion":
                                 cpeData = pynbt.TAG_Compound()
                                 cpeData.name = "Potion"
@@ -2783,34 +2833,29 @@ class MakeSpawner:
 
                 if isItem:
                         spawnerData.add(itemData)
-                spawner.spawner.add(spawnerData)
-                schem = Schematic(spawner.spawner)
+                currentmobdata.add(spawnerData)
+                self.weightedmoblist.append(currentmobdata)
+                mobtxt = ("Entity: %s Weight: %s" % (self.mobBoxSelection.get(), self.mobweightVar.get()))
+                self.weightedmobsdisplayList.insert(self.weightedmobsdisplayList.size(), mobtxt)
+                
+        def removemobfromlist(self):
+                print("Removing entity from list")
+                selection = self.weightedmobsdisplayList.curselection()
+                if len(selection) > 0:
+                        self.weightedmoblist.pop(int(selection[0]))
+                        self.weightedmobsdisplayList.delete(selection)
 
-                print(schem.schematic.pretty_string())
-                schem.schematic.save(filename="./schematics/" + self.filenameVar.get() + ".schematic")
+        def removeallmobs(self):
+                print("Clearing entity list")
+                self.weightedmoblist = []
+                self.weightedmobsdisplayList.delete(0,'end')
 
-        def loadschematic(self):
-                schematicfilename = tkFileDialog.askopenfilename(parent=self.root,title='Please select a spawner schematic file')
-                print("Loading: " + schematicfilename)
-                schem = None
-                try:
-                        schem = pynbt.load(filename = schematicfilename)
-                except:
-                        print("ERROR: No file selected or invalid file!!")
+        def selectmobfromlist(self, event=None):
+                selection = self.weightedmobsdisplayList.curselection()
+                if len(selection) <= 0:
+                        print("Selection error!")
                         return
-                schemspawner = None
-                try:
-                        schemspawner = schem["TileEntities"].value[0]
-                except:
-                        print("ERROR: No tile entities (spawners) in schematic!!")
-                        return
-                self.delayCheck.set(False)
-                self.maxspawndelayCheck.set(False)
-                self.minspawndelayCheck.set(False)
-                self.spawncountCheck.set(False)
-                self.MaxNearbyEntitiesCheck.set(False)
-                self.RequiredPlayerRangeCheck.set(False)
-                self.SpawnRangeCheck.set(False)
+                currententitytags = self.weightedmoblist[int(selection[0])]
                 self.positionCheck.set(False)
                 self.positionCheck.set(False)
                 self.motionCheck.set(False)
@@ -2825,6 +2870,7 @@ class MakeSpawner:
                 self.dimensionCheck.set(False)
                 self.persistencereqCheck.set(False)
                 self.invulnerableCheck.set(False)
+                self.portalcooldownCheck.set(False)
                 self.inloveCheck.set(False)
                 self.saddleCheck.set(False)
                 self.shearedCheck.set(False)
@@ -2909,31 +2955,686 @@ class MakeSpawner:
                 self.custompotioneffectCheck.set(False)
                 self.splashCheck.set(False)
                 self.enderppearlownerCheck.set(False)
-                for schemtag in schemspawner.__iter__():
-                        if schemtag == "Delay":
-                                self.delayVar.set(schemspawner[schemtag].value)
-                                self.delayCheck.set(True)
-                        elif schemtag == "MaxSpawnDelay":
-                                self.maxspawndelayVar.set(schemspawner[schemtag].value)
-                                self.maxspawndelayCheck.set(True)
-                        elif schemtag == "MinSpawnDelay":
-                                self.minspawndelayVar.set(schemspawner[schemtag].value)
-                                self.minspawndelayCheck.set(True)
-                        elif schemtag == "SpawnCount":
-                                self.spawncountVar.set(schemspawner[schemtag].value)
-                                self.spawncountCheck.set(True)
-                        elif schemtag == "EntityId":
-                                self.mobBoxSelection.set(schemspawner[schemtag].value)
-                        elif schemtag == "MaxNearbyEntities":
-                                self.MaxNearbyEntitiesVar.set(schemspawner[schemtag].value)
-                                self.MaxNearbyEntitiesCheck.set(True)
-                        elif schemtag == "RequiredPlayerRange":
-                                self.RequiredPlayerRangeVar.set(schemspawner[schemtag].value)
-                                self.RequiredPlayerRangeCheck.set(True)
-                        elif schemtag == "SpawnRange":
-                                self.SpawnRangeVar.set(schemspawner[schemtag].value)
-                                self.SpawnRangeCheck.set(True)
-                        elif schemtag == "SpawnData":
+                self.mobBoxSelection.set(currententitytags["Type"].value)
+                self.mobweightVar.set(currententitytags["Weight"].value)
+                for spawndatatag in currententitytags["Properties"].__iter__():
+                        if spawndatatag == "Pos":
+                                self.positionXVar.set(currententitytags["Properties"][spawndatatag].value[0].value)
+                                self.positionYVar.set(currententitytags["Properties"][spawndatatag].value[1].value)
+                                self.positionZVar.set(currententitytags["Properties"][spawndatatag].value[2].value)
+                                self.positionCheck.set(True)
+                        elif spawndatatag == "Motion":
+                                self.motionXVar.set(currententitytags["Properties"][spawndatatag].value[0].value)
+                                self.motionYVar.set(currententitytags["Properties"][spawndatatag].value[1].value)
+                                self.motionZVar.set(currententitytags["Properties"][spawndatatag].value[2].value)
+                                self.motionCheck.set(True)
+                        elif spawndatatag == "direction":
+                                self.directionXVar.set(currententitytags["Properties"][spawndatatag].value[0].value)
+                                self.directionYVar.set(currententitytags["Properties"][spawndatatag].value[1].value)
+                                self.directionZVar.set(currententitytags["Properties"][spawndatatag].value[2].value)
+                                self.directionCheck.set(True)
+                        elif spawndatatag == "Health":
+                                self.healthVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.healthCheck.set(True)
+                        elif spawndatatag == "Fire":
+                                self.fireVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.fireCheck.set(True)
+                        elif spawndatatag == "Air":
+                                self.airVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.airCheck.set(True)
+                        elif spawndatatag == "AttackTime":
+                                self.attacktimeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.attacktimeCheck.set(True)
+                        elif spawndatatag == "HurtTime":
+                                self.hurttimeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.hurttimeCheck.set(True)
+                        elif spawndatatag == "DeathTime":
+                                self.deathtimeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.deathtimeCheck.set(True)
+                        elif spawndatatag == "CanPickUpLoot":
+                                self.canlootVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.canlootCheck.set(True)
+                        elif spawndatatag == "Dimension":
+                                self.dimensionVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.dimensionCheck.set(True)
+                        elif spawndatatag == "PersistenceRequired":
+                                self.persistencereqVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.persistencereqCheck.set(True)
+                        elif spawndatatag == "Invulnerable":
+                                self.invulnerableVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.invulnerableCheck.set(True)
+                        elif spawndatatag == "PortalCooldown":
+                                self.portalcooldownVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.portalcooldownCheck.set(True)
+                        elif spawndatatag == "InLove":
+                                self.inloveVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.inloveCheck.set(True)
+                        elif spawndatatag == "PlayerCreated":
+                                self.PlayerCreatedVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.PlayerCreatedCheck.set(True)
+                        elif spawndatatag == "Saddle":
+                                self.saddleVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.saddleCheck.set(True)
+                        elif spawndatatag == "Sheared":
+                                self.shearedVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.shearedCheck.set(True)
+                        elif spawndatatag == "Color":
+                                self.colorVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.colorCheck.set(True)
+                        elif spawndatatag == "powered":
+                                self.poweredVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.poweredCheck.set(True)
+                        elif spawndatatag == "ExplosionRadius":
+                                self.explosionradiusVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.explosionradiusCheck.set(True)
+                        elif spawndatatag == "BatFlags":
+                                self.batflagsVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.batflagsCheck.set(True)
+                        elif spawndatatag == "SkeletonType":
+                                self.skeletontypeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.skeletontypeCheck.set(True)
+                        elif spawndatatag == "Invul":
+                                self.witherinvulVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.witherinvulCheck.set(True)
+                        elif spawndatatag == "Size":
+                                self.sizeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.sizeCheck.set(True)
+                        elif spawndatatag == "Owner":
+                                self.ownerVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.ownerCheck.set(True)
+                        elif spawndatatag == "Sitting":
+                                self.sittingVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.sittingCheck.set(True)
+                        elif spawndatatag == "Angry":
+                                self.angryVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.angryCheck.set(True)
+                        elif spawndatatag == "CollarColor":
+                                self.collarcolorVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.collarcolorCheck.set(True)
+                        elif spawndatatag == "CatType":
+                                self.cattypeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.cattypeCheck.set(True)
+                        elif spawndatatag == "Anger":
+                                self.angerVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.angerCheck.set(True)
+                        elif spawndatatag == "carried":
+                                self.carriedVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.carriedCheck.set(True)
+                        elif spawndatatag == "carriedData":
+                                self.carrieddataVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.carrieddataCheck.set(True)
+                        elif spawndatatag == "Profession":
+                                self.professionVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.professionCheck.set(True)
+                        elif spawndatatag == "Riches":
+                                self.richesVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.richesCheck.set(True)
+                        elif spawndatatag == "potionValue":
+                                self.thrownpotionvalueVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.thrownpotionvalueCheck.set(True)
+                        elif spawndatatag == "Fuse":
+                                if schemspawner["EntityId"].value == "Creeper":
+                                        self.creeperfuseVar.set(currententitytags["Properties"][spawndatatag].value)
+                                        self.creeperfuseCheck.set(True)
+                                else:
+                                        self.fuseVar.set(currententitytags["Properties"][spawndatatag].value)
+                                        self.fuseCheck.set(True)
+                        elif spawndatatag == "Data":
+                                self.dataVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.dataCheck.set(True)
+                        elif spawndatatag == "OnGround":
+                                self.ongroundVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.ongroundCheck.set(True)
+                        elif spawndatatag == "Tile":
+                                self.tileVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.tileCheck.set(True)
+                        elif spawndatatag == "Time":
+                                self.timeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.timeCheck.set(True)
+                        elif spawndatatag == "FallDistance":
+                                self.falldistanceVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.falldistanceCheck.set(True)
+                        elif spawndatatag == "DropItem":
+                                self.dropitemVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.dropitemCheck.set(True)
+                        elif spawndatatag == "HurtEntities":
+                                self.HurtEntitiesVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.HurtEntitiesCheck.set(True)
+                        elif spawndatatag == "FallHurtMax":
+                                self.FallHurtMaxVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.FallHurtMaxCheck.set(True)
+                        elif spawndatatag == "FallHurtAmount":
+                                self.FallHurtAmountVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.FallHurtAmountCheck.set(True)
+                        elif spawndatatag == "Value":
+                                self.valueVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.valueCheck.set(True)
+                        elif spawndatatag == "xTile":
+                                self.xtileVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.xtileCheck.set(True)
+                        elif spawndatatag == "yTile":
+                                self.ytileVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.ytileCheck.set(True)
+                        elif spawndatatag == "zTile":
+                                self.ztileVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.ztileCheck.set(True)
+                        elif spawndatatag == "inTile":
+                                self.intileVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.intileCheck.set(True)
+                        elif spawndatatag == "shake":
+                                self.shakeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.shakeCheck.set(True)
+                        elif spawndatatag == "inGround":
+                                self.ingroundVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.ingroundCheck.set(True)
+                        elif spawndatatag == "inData":
+                                self.indataVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.indataCheck.set(True)
+                        elif spawndatatag == "pickup":
+                                self.pickupVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.pickupCheck.set(True)
+                        elif spawndatatag == "damage":
+                                self.damageVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.damageCheck.set(True)
+                        elif spawndatatag == "ownerName":
+                                self.enderppearlownerVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.enderppearlownerCheck.set(True)
+                        elif spawndatatag == "Age":
+                                if schemspawner["EntityId"].value == "Item":
+                                        self.itemageVar.set(currententitytags["Properties"][spawndatatag].value)
+                                        self.itemageCheck.set(True)
+                                else:
+                                        self.mobageVar.set(currententitytags["Properties"][spawndatatag].value)
+                                        self.mobageCheck.set(True)
+                        elif spawndatatag == "IsVillager":
+                                self.isvillagerVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.isvillagerCheck.set(True)
+                        elif spawndatatag == "IsBaby":
+                                self.isbabyVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.isbabyCheck.set(True)
+                        elif spawndatatag == "ConversionTime":
+                                self.conversiontimeVar.set(currententitytags["Properties"][spawndatatag].value)
+                                self.conversiontimeCheck.set(True)
+                        elif spawndatatag == "Equipment":
+                                if currententitytags["Properties"][spawndatatag].value[0].__len__() > 0:
+                                        self.mobweaponcountVar.set(currententitytags["Properties"][spawndatatag].value[0]["Count"].value)
+                                        self.mobweaponidVar.set(currententitytags["Properties"][spawndatatag].value[0]["id"].value)
+                                        self.mobweapondamageVar.set(currententitytags["Properties"][spawndatatag].value[0]["Damage"].value)
+                                        self.mobweaponenchantsVar.set("")
+                                        self.mobweaponcolorVar.set(-1)
+                                        self.mobweaponnameVar.set("")
+                                        self.mobweaponloreVar.set("")
+                                        if currententitytags["Properties"][spawndatatag].value[0].__contains__("tag"):
+                                                if currententitytags["Properties"][spawndatatag].value[0]["tag"].__contains__("ench"):
+                                                        enchantstring = ""
+                                                        for enchant in currententitytags["Properties"][spawndatatag].value[0]["tag"]["ench"].value:
+                                                                enchantstring += ("%s %s " % (enchant["id"].value, enchant["lvl"].value))
+                                                        self.mobweaponenchantsVar.set(enchantstring)
+                                                if currententitytags["Properties"][spawndatatag].value[0]["tag"].__contains__("display"):
+                                                        if currententitytags["Properties"][spawndatatag].value[0]["tag"]["display"].__contains__("color"):
+                                                                self.mobweaponcolorVar.set(currententitytags["Properties"][spawndatatag].value[0]["tag"]["display"]["color"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[0]["tag"]["display"].__contains__("Name"):
+                                                                self.mobweaponnameVar.set(currententitytags["Properties"][spawndatatag].value[0]["tag"]["display"]["Name"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[0]["tag"]["display"].__contains__("Lore"):
+                                                                self.mobweaponloreVar.set('/n'.join(map(lambda x: x.value, currententitytags["Properties"][spawndatatag].value[0]["tag"]["display"]["Lore"].value)))                                                                        
+                                        self.mobweaponCheck.set(True)
+                                if currententitytags["Properties"][spawndatatag].value[1].__len__() > 0:
+                                        self.mobbootscountVar.set(currententitytags["Properties"][spawndatatag].value[1]["Count"].value)
+                                        self.mobbootsidVar.set(currententitytags["Properties"][spawndatatag].value[1]["id"].value)
+                                        self.mobbootsdamageVar.set(currententitytags["Properties"][spawndatatag].value[1]["Damage"].value)
+                                        self.mobbootsenchantsVar.set("")
+                                        self.mobbootscolorVar.set(-1)
+                                        self.mobbootsnameVar.set("")
+                                        self.mobbootsloreVar.set("")
+                                        if currententitytags["Properties"][spawndatatag].value[1].__contains__("tag"):
+                                                if currententitytags["Properties"][spawndatatag].value[1]["tag"].__contains__("ench"):
+                                                        enchantstring = ""
+                                                        for enchant in currententitytags["Properties"][spawndatatag].value[1]["tag"]["ench"].value:
+                                                                enchantstring += ("%s %s " % (enchant["id"].value, enchant["lvl"].value))
+                                                        self.mobbootsenchantsVar.set(enchantstring)
+                                                if currententitytags["Properties"][spawndatatag].value[1]["tag"].__contains__("display"):
+                                                        if currententitytags["Properties"][spawndatatag].value[1]["tag"]["display"].__contains__("color"):
+                                                                self.mobbootscolorVar.set(currententitytags["Properties"][spawndatatag].value[1]["tag"]["display"]["color"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[1]["tag"]["display"].__contains__("Name"):
+                                                                self.mobbootsnameVar.set(currententitytags["Properties"][spawndatatag].value[1]["tag"]["display"]["Name"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[1]["tag"]["display"].__contains__("Lore"):
+                                                                self.mobbootsloreVar.set('/n'.join(map(lambda x: x.value, currententitytags["Properties"][spawndatatag].value[1]["tag"]["display"]["Lore"].value)))                                                                
+                                        self.mobbootsCheck.set(True)
+                                if currententitytags["Properties"][spawndatatag].value[2].__len__() > 0:
+                                        self.moblegscountVar.set(currententitytags["Properties"][spawndatatag].value[2]["Count"].value)
+                                        self.moblegsidVar.set(currententitytags["Properties"][spawndatatag].value[2]["id"].value)
+                                        self.moblegsdamageVar.set(currententitytags["Properties"][spawndatatag].value[2]["Damage"].value)
+                                        self.moblegsenchantsVar.set("")
+                                        self.moblegscolorVar.set(-1)
+                                        self.moblegsnameVar.set("")
+                                        self.moblegsloreVar.set("")
+                                        if currententitytags["Properties"][spawndatatag].value[2].__contains__("tag"):
+                                                if currententitytags["Properties"][spawndatatag].value[2]["tag"].__contains__("ench"):
+                                                        enchantstring = ""
+                                                        for enchant in currententitytags["Properties"][spawndatatag].value[2]["tag"]["ench"].value:
+                                                                enchantstring += ("%s %s " % (enchant["id"].value, enchant["lvl"].value))
+                                                        self.moblegsenchantsVar.set(enchantstring)
+                                                if currententitytags["Properties"][spawndatatag].value[2]["tag"].__contains__("display"):
+                                                        if currententitytags["Properties"][spawndatatag].value[2]["tag"]["display"].__contains__("color"):
+                                                                self.moblegscolorVar.set(currententitytags["Properties"][spawndatatag].value[2]["tag"]["display"]["color"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[2]["tag"]["display"].__contains__("Name"):
+                                                                self.moblegsnameVar.set(currententitytags["Properties"][spawndatatag].value[2]["tag"]["display"]["Name"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[2]["tag"]["display"].__contains__("Lore"):
+                                                                self.moblegsloreVar.set('/n'.join(map(lambda x: x.value, currententitytags["Properties"][spawndatatag].value[2]["tag"]["display"]["Lore"].value)))                                                                        
+                                        self.moblegsCheck.set(True)
+                                if currententitytags["Properties"][spawndatatag].value[3].__len__() > 0:
+                                        self.mobchestcountVar.set(currententitytags["Properties"][spawndatatag].value[3]["Count"].value)
+                                        self.mobchestidVar.set(currententitytags["Properties"][spawndatatag].value[3]["id"].value)
+                                        self.mobchestdamageVar.set(currententitytags["Properties"][spawndatatag].value[3]["Damage"].value)
+                                        self.mobchestenchantsVar.set("")
+                                        self.mobchestcolorVar.set(-1)
+                                        self.mobchestnameVar.set("")
+                                        self.mobchestloreVar.set("")
+                                        if currententitytags["Properties"][spawndatatag].value[3].__contains__("tag"):
+                                                if currententitytags["Properties"][spawndatatag].value[3]["tag"].__contains__("ench"):
+                                                        enchantstring = ""
+                                                        for enchant in currententitytags["Properties"][spawndatatag].value[3]["tag"]["ench"].value:
+                                                                enchantstring += ("%s %s " % (enchant["id"].value, enchant["lvl"].value))
+                                                        self.mobchestenchantsVar.set(enchantstring)
+                                                if currententitytags["Properties"][spawndatatag].value[3]["tag"].__contains__("display"):
+                                                        if currententitytags["Properties"][spawndatatag].value[3]["tag"]["display"].__contains__("color"):
+                                                                self.mobchestcolorVar.set(currententitytags["Properties"][spawndatatag].value[3]["tag"]["display"]["color"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[3]["tag"]["display"].__contains__("Name"):
+                                                                self.mobchestnameVar.set(currententitytags["Properties"][spawndatatag].value[3]["tag"]["display"]["Name"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[3]["tag"]["display"].__contains__("Lore"):
+                                                                self.mobchestloreVar.set('/n'.join(map(lambda x: x.value, currententitytags["Properties"][spawndatatag].value[3]["tag"]["display"]["Lore"].value)))                                                                        
+                                        self.mobchestCheck.set(True)
+                                if currententitytags["Properties"][spawndatatag].value[4].__len__() > 0:
+                                        self.mobhelmetcountVar.set(currententitytags["Properties"][spawndatatag].value[4]["Count"].value)
+                                        self.mobhelmetidVar.set(currententitytags["Properties"][spawndatatag].value[4]["id"].value)
+                                        self.mobhelmetdamageVar.set(currententitytags["Properties"][spawndatatag].value[4]["Damage"].value)
+                                        self.mobhelmetenchantsVar.set("")
+                                        self.mobhelmetcolorVar.set(-1)
+                                        self.mobhelmetnameVar.set("")
+                                        self.mobhelmetloreVar.set("")
+                                        if currententitytags["Properties"][spawndatatag].value[4].__contains__("tag"):
+                                                if currententitytags["Properties"][spawndatatag].value[4]["tag"].__contains__("ench"):
+                                                        enchantstring = ""
+                                                        for enchant in currententitytags["Properties"][spawndatatag].value[4]["tag"]["ench"].value:
+                                                                enchantstring += ("%s %s " % (enchant["id"].value, enchant["lvl"].value))
+                                                        self.mobhelmetenchantsVar.set(enchantstring)                                                                
+                                                if currententitytags["Properties"][spawndatatag].value[4]["tag"].__contains__("display"):
+                                                        if currententitytags["Properties"][spawndatatag].value[4]["tag"]["display"].__contains__("color"):
+                                                                self.mobhelmetcolorVar.set(currententitytags["Properties"][spawndatatag].value[4]["tag"]["display"]["color"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[4]["tag"]["display"].__contains__("Name"):
+                                                                self.mobhelmetnameVar.set(currententitytags["Properties"][spawndatatag].value[4]["tag"]["display"]["Name"].value)
+                                                        if currententitytags["Properties"][spawndatatag].value[4]["tag"]["display"].__contains__("Lore"):
+                                                                self.mobhelmetloreVar.set('/n'.join(map(lambda x: x.value, currententitytags["Properties"][spawndatatag].value[4]["tag"]["display"]["Lore"].value)))                                                                        
+                                        self.mobhelmetCheck.set(True)
+                        elif spawndatatag == "DropChances":
+                                self.mobweaponchanceVar.set(currententitytags["Properties"][spawndatatag].value[0].value)
+                                self.mobbootschanceVar.set(currententitytags["Properties"][spawndatatag].value[1].value)
+                                self.moblegschanceVar.set(currententitytags["Properties"][spawndatatag].value[2].value)
+                                self.mobchestchanceVar.set(currententitytags["Properties"][spawndatatag].value[3].value)
+                                self.mobhelmetchanceVar.set(currententitytags["Properties"][spawndatatag].value[4].value)
+                        elif spawndatatag == "ActiveEffects":
+                                for x in range(len(currententitytags["Properties"][spawndatatag].value)):
+                                        if currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 1:
+                                                self.pspeedlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pspeeddurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pspeedambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pspeedambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pspeedCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 2:
+                                                self.pslowlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pslowdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pslowambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pslowambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pslowCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 3:
+                                                self.phastelevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.phastedurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.phasteambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.phasteambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.phasteCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 4:
+                                                self.pfatiguelevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pfatiguedurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pfatigueambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pfatigueambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pfatigueCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 5:
+                                                self.pstrengthlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pstrengthdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pstrengthambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pstrengthambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pstrengthCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 6:
+                                                self.phealthlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.phealthdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.phealthambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.phealthambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.phealthCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 7:
+                                                self.pdamagelevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pdamagedurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pdamageambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pdamageambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pdamageCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 8:
+                                                self.pjumplevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pjumpdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pjumpambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pjumpambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pjumpCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 9:
+                                                self.pnausealevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pnauseadurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pnauseaambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pnauseaambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pnauseaCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 10:
+                                                self.pregenlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pregendurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pregenambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pregenambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pregenCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 11:
+                                                self.presistlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.presistdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.presistambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.presistambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.presistCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 12:
+                                                self.pfirereslevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pfireresdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pfireresambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pfireresambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pfireresCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 13:
+                                                self.pwaterbrlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pwaterbrdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pwaterbrambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pwaterbrambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pwaterbrCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 14:
+                                                self.pinvislevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pinvisdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pinvisambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pinvisambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pinvisCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 15:
+                                                self.pblindlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pblinddurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pblindambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pblindambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pblindCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 16:
+                                                self.pnightvlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pnightvdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pnightvambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pnightvambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pnightvCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 17:
+                                                self.phungerlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.phungerdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.phungerambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.phungerambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.phungerCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 18:
+                                                self.pweaklevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pweakdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pweakambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pweakambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pweakCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 19:
+                                                self.ppoisonlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.ppoisondurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.ppoisonambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.ppoisonambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.ppoisonCheck.set(True)
+                                        elif currententitytags["Properties"][spawndatatag].value[x]["Id"].value == 20:
+                                                self.pwitherlevelVar.set(currententitytags["Properties"][spawndatatag].value[x]["Amplifier"].value)
+                                                self.pwitherdurationVar.set(currententitytags["Properties"][spawndatatag].value[x]["Duration"].value)
+                                                self.pwitherambientVar.set(0)
+                                                if currententitytags["Properties"][spawndatatag].value[x].__contains__("Ambient"):
+                                                        self.pwitherambientVar.set(currententitytags["Properties"][spawndatatag].value[x]["Ambient"].value)
+                                                self.pwitherCheck.set(True)
+                        elif spawndatatag == "Item":
+                                if currententitytags["Properties"][spawndatatag].__contains__("Count"):
+                                        self.countVar.set(currententitytags["Properties"][spawndatatag]["Count"].value)
+                                        self.countCheck.set(True)
+                                if currententitytags["Properties"][spawndatatag].__contains__("Damage"):
+                                        self.damageitemVar.set(currententitytags["Properties"][spawndatatag]["Damage"].value)
+                                        self.damageitemCheck.set(True)
+                                if currententitytags["Properties"][spawndatatag].__contains__("id"):
+                                        self.idVar.set(currententitytags["Properties"][spawndatatag]["id"].value)
+                                        self.idCheck.set(True)
+                                if currententitytags["Properties"][spawndatatag].__contains__("tag"):
+                                        if currententitytags["Properties"][spawndatatag]["tag"].__contains__("SkullOwner"):
+                                                self.itemskullownerVar.set(currententitytags["Properties"][spawndatatag]["tag"]["SkullOwner"].value)
+                                                self.itemskullownerCheck.set(True)
+                                        if currententitytags["Properties"][spawndatatag]["tag"].__contains__("ench"):
+                                                enchantstring = ""
+                                                for enchant in currententitytags["Properties"][spawndatatag]["tag"]["ench"].value:
+                                                        enchantstring += ("%s %s " % (enchant["id"].value, enchant["lvl"].value))
+                                                self.enchantsVar.set(enchantstring)
+                                                self.enchantsCheck.set(True)
+                                        if currententitytags["Properties"][spawndatatag]["tag"].__contains__("display"):
+                                                if currententitytags["Properties"][spawndatatag]["tag"]["display"].__contains__("color"):
+                                                        self.itemcolorVar.set(currententitytags["Properties"][spawndatatag]["tag"]["display"]["color"].value)
+                                                        self.itemcolorCheck.set(True)
+                                                if currententitytags["Properties"][spawndatatag]["tag"]["display"].__contains__("Name"):
+                                                        self.itemnameVar.set(currententitytags["Properties"][spawndatatag]["tag"]["display"]["Name"].value)
+                                                        self.itemnameCheck.set(True)
+                                                if currententitytags["Properties"][spawndatatag]["tag"]["display"].__contains__("Lore"):
+                                                        self.itemloreVar.set('/n'.join(map(lambda x: x.value, currententitytags["Properties"][spawndatatag]["tag"]["display"]["Lore"].value)))
+                                                        self.itemloreCheck.set(True)                                                                
+                                        if currententitytags["Properties"][spawndatatag]["tag"].__contains__("CustomPotionEffects"):
+                                                self.removeallEffects()
+                                                for potioneffecttag in currententitytags["Properties"][spawndatatag]["tag"]["CustomPotionEffects"].value:
+                                                        effect = PotionEffect(potioneffecttag["Id"].value, potioneffecttag["Amplifier"].value, potioneffecttag["Duration"].value)
+                                                        self.currenteffects.append(effect)
+                                                        effecttxt = ("ID: %s Level: %s Duration: %s" % (potioneffecttag["Id"].value, potioneffecttag["Amplifier"].value, potioneffecttag["Duration"].value))
+                                                        self.effectList.insert(self.effectList.size(), effecttxt)
+                                                if currententitytags["Properties"][spawndatatag].__contains__("Damage"):
+                                                        self.effectdamageVar.set(currententitytags["Properties"][spawndatatag]["Damage"].value)
+                                                        if currententitytags["Properties"][spawndatatag]["Damage"].value in self.presetsplashdamagelist:
+                                                                self.colorBox.set(self.presetcolorlist[self.presetsplashdamagelist.index(currententitytags["Properties"][spawndatatag]["Damage"].value)])
+                                                                self.splashCheck.set(True)
+                                                        elif currententitytags["Properties"][spawndatatag]["Damage"].value in self.presetdamagelist:
+                                                                self.colorBox.set(self.presetcolorlist[self.presetdamagelist.index(currententitytags["Properties"][spawndatatag]["Damage"].value)])
+                                                        else:
+                                                                self.colorBox.set("custom value")
+                                                self.custompotioneffectCheck.set(True)
+                        elif spawndatatag == "Potion":
+                                if currententitytags["Properties"][spawndatatag].__contains__("Damage"):
+                                        self.effectdamageVar.set(currententitytags["Properties"][spawndatatag]["Damage"].value)
+                                        if currententitytags["Properties"][spawndatatag]["Damage"].value in self.presetsplashdamagelist:
+                                                self.colorBox.set(self.presetcolorlist[self.presetsplashdamagelist.index(currententitytags["Properties"][spawndatatag]["Damage"].value)])
+                                        else:
+                                                self.colorBox.set("custom value")
+                                if currententitytags["Properties"][spawndatatag].__contains__("tag"):
+                                        if currententitytags["Properties"][spawndatatag]["tag"].__contains__("CustomPotionEffects"):
+                                                self.removeallEffects()
+                                                for potioneffecttag in currententitytags["Properties"][spawndatatag]["tag"]["CustomPotionEffects"].value:
+                                                        effect = PotionEffect(potioneffecttag["Id"].value, potioneffecttag["Amplifier"].value, potioneffecttag["Duration"].value)
+                                                        self.currenteffects.append(effect)
+                                                        effecttxt = ("ID: %s Level: %s Duration: %s" % (potioneffecttag["Id"].value, potioneffecttag["Amplifier"].value, potioneffecttag["Duration"].value))
+                                                        self.effectList.insert(self.effectList.size(), effecttxt)
+                                                self.custompotioneffectCheck.set(True)
+
+        def loadschematic(self):
+                schematicfilename = tkFileDialog.askopenfilename(parent=self.root,title='Please select a spawner schematic file')
+                print("Loading: " + schematicfilename)
+                schem = None
+                try:
+                        schem = pynbt.load(filename = schematicfilename)
+                except:
+                        print("ERROR: No file selected or invalid file!!")
+                        return
+                schemspawner = None
+                try:
+                        schemspawner = schem["TileEntities"].value[0]
+                except:
+                        print("ERROR: No tile entities (spawners) in schematic!!")
+                        return
+                self.delayCheck.set(False)
+                self.maxspawndelayCheck.set(False)
+                self.minspawndelayCheck.set(False)
+                self.spawncountCheck.set(False)
+                self.MaxNearbyEntitiesCheck.set(False)
+                self.RequiredPlayerRangeCheck.set(False)
+                self.SpawnRangeCheck.set(False)
+                self.positionCheck.set(False)
+                self.positionCheck.set(False)
+                self.motionCheck.set(False)
+                self.directionCheck.set(False)
+                self.healthCheck.set(False)
+                self.fireCheck.set(False)
+                self.airCheck.set(False)
+                self.attacktimeCheck.set(False)
+                self.hurttimeCheck.set(False)
+                self.deathtimeCheck.set(False)
+                self.canlootCheck.set(False)
+                self.dimensionCheck.set(False)
+                self.persistencereqCheck.set(False)
+                self.invulnerableCheck.set(False)
+                self.portalcooldownCheck.set(False)
+                self.inloveCheck.set(False)
+                self.saddleCheck.set(False)
+                self.shearedCheck.set(False)
+                self.colorCheck.set(False)
+                self.poweredCheck.set(False)
+                self.explosionradiusCheck.set(False)
+                self.batflagsCheck.set(False)
+                self.skeletontypeCheck.set(False)
+                self.witherinvulCheck.set(False)
+                self.sizeCheck.set(False)
+                self.ownerCheck.set(False)
+                self.sittingCheck.set(False)
+                self.angryCheck.set(False)
+                self.cattypeCheck.set(False)
+                self.collarcolorCheck.set(False)
+                self.angerCheck.set(False)
+                self.carriedCheck.set(False)
+                self.carrieddataCheck.set(False)
+                self.professionCheck.set(False)
+                self.richesCheck.set(False)
+                self.PlayerCreatedCheck.set(False)
+                self.thrownpotionvalueCheck.set(False)
+                self.isvillagerCheck.set(False)
+                self.isbabyCheck.set(False)
+                self.conversiontimeCheck.set(False)
+                self.xtileCheck.set(False)
+                self.ytileCheck.set(False)
+                self.ztileCheck.set(False)
+                self.intileCheck.set(False)
+                self.shakeCheck.set(False)
+                self.ingroundCheck.set(False)
+                self.indataCheck.set(False)
+                self.pickupCheck.set(False)
+                self.damageCheck.set(False)
+                self.dataCheck.set(False)
+                self.ongroundCheck.set(False)
+                self.tileCheck.set(False)
+                self.timeCheck.set(False)
+                self.falldistanceCheck.set(False)
+                self.dropitemCheck.set(False)
+                self.HurtEntitiesCheck.set(False)
+                self.FallHurtMaxCheck.set(False)
+                self.FallHurtAmountCheck.set(False)
+                self.valueCheck.set(False)
+                self.creeperfuseCheck.set(False)
+                self.fuseCheck.set(False)
+                self.mobageCheck.set(False)
+                self.itemageCheck.set(False)
+                self.pspeedCheck.set(False)
+                self.pslowCheck.set(False)
+                self.phasteCheck.set(False)
+                self.pfatigueCheck.set(False)
+                self.pstrengthCheck.set(False)
+                self.phealthCheck.set(False)
+                self.pdamageCheck.set(False)
+                self.pjumpCheck.set(False)
+                self.pnauseaCheck.set(False)
+                self.pregenCheck.set(False)
+                self.presistCheck.set(False)
+                self.pfireresCheck.set(False)
+                self.pwaterbrCheck.set(False)
+                self.pinvisCheck.set(False)
+                self.pblindCheck.set(False)
+                self.pnightvCheck.set(False)
+                self.phungerCheck.set(False)
+                self.pweakCheck.set(False)
+                self.ppoisonCheck.set(False)
+                self.pwitherCheck.set(False)
+                self.mobweaponCheck.set(False)
+                self.mobbootsCheck.set(False)
+                self.moblegsCheck.set(False)
+                self.mobchestCheck.set(False)
+                self.mobhelmetCheck.set(False)
+                self.countCheck.set(False)
+                self.idCheck.set(False)
+                self.damageitemCheck.set(False)
+                self.itemskullownerCheck.set(False)
+                self.itemnameCheck.set(False)
+                self.enchantsCheck.set(False)
+                self.itemloreCheck.set(False)
+                self.itemcolorCheck.set(False)
+                self.custompotioneffectCheck.set(False)
+                self.splashCheck.set(False)
+                self.enderppearlownerCheck.set(False)
+                if schemspawner.__contains__("Delay"):
+                        self.delayVar.set(schemspawner["Delay"].value)
+                        self.delayCheck.set(True)
+                if schemspawner.__contains__("MaxSpawnDelay"):
+                        self.maxspawndelayVar.set(schemspawner["MaxSpawnDelay"].value)
+                        self.maxspawndelayCheck.set(True)
+                if schemspawner.__contains__("MinSpawnDelay"):
+                        self.minspawndelayVar.set(schemspawner["MinSpawnDelay"].value)
+                        self.minspawndelayCheck.set(True)
+                if schemspawner.__contains__("SpawnCount"):
+                        self.spawncountVar.set(schemspawner["SpawnCount"].value)
+                        self.spawncountCheck.set(True)
+                if schemspawner.__contains__("EntityId"):
+                        self.mobBoxSelection.set(schemspawner["EntityId"].value)
+                if schemspawner.__contains__("MaxNearbyEntities"):
+                        self.MaxNearbyEntitiesVar.set(schemspawner["MaxNearbyEntities"].value)
+                        self.MaxNearbyEntitiesCheck.set(True)
+                if schemspawner.__contains__("RequiredPlayerRange"):
+                        self.RequiredPlayerRangeVar.set(schemspawner["RequiredPlayerRange"].value)
+                        self.RequiredPlayerRangeCheck.set(True)
+                if schemspawner.__contains__("SpawnRange"):
+                        self.SpawnRangeVar.set(schemspawner["SpawnRange"].value)
+                        self.SpawnRangeCheck.set(True)
+                if schemspawner.__contains__("SpawnPotentials"):
+                        print("post-1.4.6 schematic detected")
+                        self.removeallmobs()
+                        for entitycompound in schemspawner["SpawnPotentials"]:
+                                self.weightedmoblist.append(entitycompound)
+                                mobtxt = ("Entity: %s Weight: %s" % (entitycompound["Type"].value, entitycompound["Weight"].value))
+                                self.weightedmobsdisplayList.insert(self.weightedmobsdisplayList.size(), mobtxt)
+                        self.weightedmobsdisplayList.selection_set(0)
+                        self.selectmobfromlist()
+                else:
+                        print("pre-1.4.6 schematic assumed")
+                        if schemspawner.__contains__("SpawnData"):
+                                schemtag = "SpawnData"
                                 for spawndatatag in schemspawner[schemtag].__iter__():
                                         if spawndatatag == "Pos":
                                                 self.positionXVar.set(schemspawner[schemtag][spawndatatag].value[0].value)
@@ -2980,6 +3681,9 @@ class MakeSpawner:
                                         elif spawndatatag == "Invulnerable":
                                                 self.invulnerableVar.set(schemspawner[schemtag][spawndatatag].value)
                                                 self.invulnerableCheck.set(True)
+                                        elif spawndatatag == "PortalCooldown":
+                                                self.portalcooldownVar.set(schemspawner[schemtag][spawndatatag].value)
+                                                self.portalcooldownCheck.set(True)
                                         elif spawndatatag == "InLove":
                                                 self.inloveVar.set(schemspawner[schemtag][spawndatatag].value)
                                                 self.inloveCheck.set(True)
@@ -3388,7 +4092,6 @@ class MakeSpawner:
                                                                 if schemspawner[schemtag][spawndatatag].value[x].__contains__("Ambient"):
                                                                         self.pwitherambientVar.set(schemspawner[schemtag][spawndatatag].value[x]["Ambient"].value)
                                                                 self.pwitherCheck.set(True)
-                                                        #print(schemspawner[schemtag][spawndatatag].value[x].pretty_string())
                                         elif spawndatatag == "Item":
                                                 if schemspawner[schemtag][spawndatatag].__contains__("Count"):
                                                         self.countVar.set(schemspawner[schemtag][spawndatatag]["Count"].value)
@@ -3443,7 +4146,6 @@ class MakeSpawner:
                                                                 self.colorBox.set(self.presetcolorlist[self.presetsplashdamagelist.index(schemspawner[schemtag][spawndatatag]["Damage"].value)])
                                                         else:
                                                                 self.colorBox.set("custom value")
-                                                #if schemspawner[schemtag][spawndatatag].__contains__("id"):
                                                 if schemspawner[schemtag][spawndatatag].__contains__("tag"):
                                                         if schemspawner[schemtag][spawndatatag]["tag"].__contains__("CustomPotionEffects"):
                                                                 self.removeallEffects()
@@ -3453,10 +4155,6 @@ class MakeSpawner:
                                                                         effecttxt = ("ID: %s Level: %s Duration: %s" % (potioneffecttag["Id"].value, potioneffecttag["Amplifier"].value, potioneffecttag["Duration"].value))
                                                                         self.effectList.insert(self.effectList.size(), effecttxt)
                                                                 self.custompotioneffectCheck.set(True)
-                                        #print(spawndatatag)                                        
-                        #print(schemtag)                        
-                #print(schemspawner.pretty_string())
-                #print(schem.pretty_string())
                 
         def addEffect(self):
                 print("Adding effect to potion")
@@ -3480,7 +4178,7 @@ class MakeSpawner:
 if __name__ == '__main__':
         root = Tkinter.Tk()
         root.title('Custom Spawner')
-        root.wm_geometry('750x750')
+        root.wm_geometry('1100x770')
         ## Grid sizing behavior in window
         root.grid_rowconfigure(0, weight=1)
         root.grid_columnconfigure(0, weight=1)
@@ -3499,13 +4197,6 @@ if __name__ == '__main__':
         cnv.create_window(0, 0, window=frm, anchor='nw')
         ## Frame contents
         mywindow = MakeSpawner(frm)
-        #for i in range(20):
-        #b = Button(frm, text='Button n#%s' % i, width=40)
-        #b.pack(side=TOP, padx=2, pady=2)
-        ## Update display to get correct dimensions
         frm.update_idletasks()
-        ## Configure size of canvas's scrollable zone
         cnv.configure(scrollregion=(0, 0, frm.winfo_width(), frm.winfo_height()))
-        ## Go!
-        #mywindow = MakeSpawner(root)
 	root.mainloop()
